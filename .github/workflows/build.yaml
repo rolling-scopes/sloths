@@ -35,7 +35,7 @@ jobs:
             };
             dirs.forEach((dir) => {
               const metadata = require(path.resolve(`./stickers/${dir}/metadata.json`));
-              result.stickers.push(metadata);
+              result.stickers.push({ ...metadata, id: dir });
             });
             fs.writeFileSync("./stickers/metadata.json", JSON.stringify(result, null, 2));
       - name: Upload to CDN
