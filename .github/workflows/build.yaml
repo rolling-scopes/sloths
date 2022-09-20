@@ -25,6 +25,7 @@ jobs:
           required-packages: axios
           script: |
             const fs = require("fs");
+            const path = require("path");
             const dirs = fs.readdirSync("./stickers", { withFileTypes: true })
               .filter((dirent) => dirent.isDirectory())
               .map((dirent) => dirent.name)
@@ -33,7 +34,7 @@ jobs:
               stickers: [],
             };
             dirs.forEach((dir) => {
-              const metadata = require(`./stickers/${dir}/metadata.json`);
+              const metadata = require(path.resolve(`./stickers/${dir}/metadata.json`));
               result.stickers.push(metadata);
             });
             fs.writeFileSync("./stickers/metadata.json", JSON.stringify(result, null, 2));
