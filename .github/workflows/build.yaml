@@ -1,0 +1,45 @@
+name: Build
+
+on:
+  push:
+    branches: [master]
+
+jobs:
+  deploy_build_client:
+    name: Build Sloths
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v2
+        with:
+          node-version: "16"
+
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Combine
+        uses: satackey/action-js-inline@v0.0.2
+        id: combine
+        with:
+          # Edit the following line to install packages required to run your script.
+          required-packages: axios
+          script: |
+            const fs = require('fs');
+            const dirs = readdirSync('./stickers', { withFileTypes: true })
+              .filter(dirent => dirent.isDirectory())
+              .map(dirent => dirent.name)
+              .filter(name => !name.startsWith('.'))
+            const result = {
+              stickers: [];
+            };
+            dirs.forEach((dir) => {
+              const sloth = require(`./${dir}/metadata.json`);
+              result.sloths.push(sloth);
+            });
+            fs.writeFileSync('./stickers/metadata.json', JSON.stringify(result, null, 2));
+      - name: Upload to CDN
+        env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID  }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY  }}
+          AWS_DEFAULT_REGION: eu-central-1
+        run: aws s3 cp stickers s3://cdn.rs.school/sloths/stickers --recursive --cache-control "public,max-age=300,immutable"
