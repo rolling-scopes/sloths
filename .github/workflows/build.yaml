@@ -24,19 +24,19 @@ jobs:
           # Edit the following line to install packages required to run your script.
           required-packages: axios
           script: |
-            const fs = require('fs');
-            const dirs = readdirSync('./stickers', { withFileTypes: true })
-              .filter(dirent => dirent.isDirectory())
-              .map(dirent => dirent.name)
-              .filter(name => !name.startsWith('.'))
+            const fs = require("fs");
+            const dirs = fs.readdirSync("./stickers", { withFileTypes: true })
+              .filter((dirent) => dirent.isDirectory())
+              .map((dirent) => dirent.name)
+              .filter((name) => !name.startsWith("."));
             const result = {
-              stickers: [];
+              stickers: [],
             };
             dirs.forEach((dir) => {
-              const sloth = require(`./${dir}/metadata.json`);
-              result.sloths.push(sloth);
+              const metadata = require(`./${dir}/metadata.json`);
+              result.stickers.push(metadata);
             });
-            fs.writeFileSync('./stickers/metadata.json', JSON.stringify(result, null, 2));
+            fs.writeFileSync("./stickers/metadata.json", JSON.stringify(result, null, 2));
       - name: Upload to CDN
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID  }}
