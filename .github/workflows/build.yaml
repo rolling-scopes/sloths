@@ -38,9 +38,23 @@ jobs:
               result.stickers.push({ ...metadata, id: dir });
             });
             fs.writeFileSync("./stickers/metadata.json", JSON.stringify(result, null, 2));
+
+      - name: Create file list
+        uses: satackey/action-js-inline@v0.0.2
+        with:
+          script: |
+            const fs = require('fs');
+            const fileNames = fs
+              .readdirSync('./cleaned', { withFileTypes: true })
+              .filter(dirent => dirent.isFile())
+              .map(dirent => dirent.name)
+              .filter(name => !name.startsWith('.'));
+            fs.writeFileSync('./cleaned/filelist.json', JSON.stringify(fileNames, null, 2));
       - name: Upload to CDN
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID  }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY  }}
           AWS_DEFAULT_REGION: eu-central-1
-        run: aws s3 cp stickers s3://cdn.rs.school/sloths/stickers --recursive --cache-control "public,max-age=300,immutable"
+        run: |
+          aws s3 cp stickers s3://cdn.rs.school/sloths/stickers --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp cleaned s3://cdn.rs.school/sloths/cleaned --recursive --cache-control "public,max-age=300,immutable"
