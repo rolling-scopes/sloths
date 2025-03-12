@@ -58,3 +58,8 @@ jobs:
         run: |
           aws s3 cp stickers s3://cdn.rs.school/sloths/stickers --recursive --cache-control "public,max-age=300,immutable"
           aws s3 cp cleaned s3://cdn.rs.school/sloths/cleaned --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp assets s3://cdn.rs.school/assets --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp cups s3://cdn.rs.school/cups --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp hoodies s3://cdn.rs.school/hoodies --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp t-shirts s3://cdn.rs.school/t-shirts --recursive --cache-control "public,max-age=300,immutable"
+          aws s3 cp sticker-packs s3://cdn.rs.school/sticker-packs --recursive --cache-control "public,max-age=300,immutable"
