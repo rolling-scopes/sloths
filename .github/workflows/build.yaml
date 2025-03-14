@@ -50,6 +50,51 @@ jobs:
               .map(dirent => dirent.name)
               .filter(name => !name.startsWith('.'));
             fs.writeFileSync('./cleaned/filelist.json', JSON.stringify(fileNames, null, 2));
+
+      - name: Create merch data
+        uses: satackey/action-js-inline@v0.0.2
+        with:
+          script: |
+            const fs = require("fs");
+            const path = require("path");
+            const previewFormat = [".webp", ".png"];
+            const noDownloadFormat = [".json", ".webp"];
+            function capitalizeWords(str) {
+              return str.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+            }
+            function getDirectoryStructure(dir) {
+              const result = {};
+              const items = fs.readdirSync(dir, { withFileTypes: true });
+              const files = items.filter((item) => !item.isDirectory());
+              const directories = items.filter((item) => item.isDirectory());
+              if (directories.length === 0 && files.length > 0) {
+                const preview = files.filter((file) => previewFormat.some((format) => file.name.endsWith(format)))
+                  .map((file) => path.join(dir, file.name));
+                const download = files.filter((file) => !noDownloadFormat.some((format) => file.name.endsWith(format)))
+                  .map((file) => path.join(dir, file.name));
+                return {
+                  name: capitalizeWords(path.basename(dir)),
+                  preview: preview,
+                  download: download,
+                };
+              }
+              directories.forEach((directory) => {
+                result[directory.name] = getDirectoryStructure(
+                  path.join(dir, directory.name)
+                );
+              });
+              return result;
+            }
+            const merchStructure = getDirectoryStructure("./merch");
+            const assetsStructure = getDirectoryStructure("./assets");
+            const stickersStructure = getDirectoryStructure("./stickers");
+            const combinedStructure = {
+              merch: merchStructure,
+              assets: assetsStructure,
+              stickers: stickersStructure,
+            };
+            fs.writeFileSync("./filelist.json", JSON.stringify(combinedStructure, null, 2));
+
       - name: Upload to CDN
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.DEPLOY_AWS_ACCESS_KEY_ID  }}
