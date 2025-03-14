@@ -93,7 +93,7 @@ jobs:
               assets: assetsStructure,
               stickers: stickersStructure,
             };
-            fs.writeFileSync("./filelist.json", JSON.stringify(combinedStructure, null, 2));
+            fs.writeFileSync("./merch/filelist.json", JSON.stringify(combinedStructure, null, 2));
 
       - name: Upload to CDN
         env:
