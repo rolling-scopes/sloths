@@ -12,7 +12,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: "22"
+          node-version: '22'
 
       - name: Checkout
         uses: actions/checkout@v2
@@ -55,23 +55,23 @@ jobs:
         uses: satackey/action-js-inline@v0.0.2
         with:
           script: |
-            const fs = require("fs");
-            const path = require("path");
-            const previewFormat = [".webp", ".png"];
-            const noDownloadFormat = [".json", ".webp"];
+            const fs = require('fs');
+            const path = require('path');
+            const previewFormat = ['.webp', '.png'];
+            const noDownloadFormat = ['.json', '.webp'];
             function capitalizeWords(str) {
-              return str.replace(/-/g, " ").replace(/\b\w/g, (char) => char.toUpperCase());
+              return str.replace(/-/g, ' ').replace(/\b\w/g, (char) => char.toUpperCase());
             }
-            function getDirectoryStructure(dir) {
+            function getDirectoryStructure(dir, prefix = '') {
               const result = {};
               const items = fs.readdirSync(dir, { withFileTypes: true });
               const files = items.filter((item) => !item.isDirectory());
               const directories = items.filter((item) => item.isDirectory());
               if (directories.length === 0 && files.length > 0) {
                 const preview = files.filter((file) => previewFormat.some((format) => file.name.endsWith(format)))
-                  .map((file) => path.join(dir, file.name));
+                  .map((file) => path.join(prefix, dir, file.name));
                 const download = files.filter((file) => !noDownloadFormat.some((format) => file.name.endsWith(format)))
-                  .map((file) => path.join(dir, file.name));
+                  .map((file) => path.join(prefix, dir, file.name));
                 return {
                   name: capitalizeWords(path.basename(dir)),
                   preview: preview,
@@ -80,20 +80,21 @@ jobs:
               }
               directories.forEach((directory) => {
                 result[directory.name] = getDirectoryStructure(
-                  path.join(dir, directory.name)
+                  path.join(dir, directory.name),
+                  prefix
                 );
               });
               return result;
             }
-            const merchStructure = getDirectoryStructure("./merch");
-            const assetsStructure = getDirectoryStructure("./assets");
-            const stickersStructure = getDirectoryStructure("./stickers");
+            const merchStructure = getDirectoryStructure('./merch');
+            const assetsStructure = getDirectoryStructure('./assets');
+            const stickersStructure = getDirectoryStructure('./stickers', 'sloths');
             const combinedStructure = {
               merch: merchStructure,
               assets: assetsStructure,
               stickers: stickersStructure,
             };
-            fs.writeFileSync("./merch/filelist.json", JSON.stringify(combinedStructure, null, 2));
+            fs.writeFileSync('./merch/filelist.json', JSON.stringify(combinedStructure, null, 2));
 
       - name: Upload to CDN
         env:
